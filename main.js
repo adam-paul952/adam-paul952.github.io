@@ -1,13 +1,13 @@
-//Create HTML grid for board
+// Create HTML grid for board
 const generateBoard = () => {
-    //Call div for containing table
+    // Call div for containing table
     let sudokuGrid = document.getElementById("container");
 
-    //Create table and table body
+    // Create table and table body
     let grid = document.createElement("table");
     let tbody = document.createElement("tbody");
 
-    //Create rows and cols
+    // Create rows and cols
     for (let i = 0; i < 9; i++) {
         let row = document.createElement("tr");
         for (let j = 0; j < 9; j++) {
@@ -65,7 +65,6 @@ const createReset = () => {
 }
 
 // Parse through HTML table and return values
-// and execute solver
 function readTable(table) {
     const nodes = table.childNodes;
     let cellCount = 1;
@@ -92,16 +91,26 @@ function readTable(table) {
 // Call solve and display results in HTML table
 function displaySolveBoard(table) {
     let inputs = readTable(table);
-    let solved = solveBoard(inputs);
-    for (let i = 0; i < table.rows.length; i++) {
-        for (let j = 0; j < table.rows[i].cells.length; j++) {
-            table.rows[i].cells[j].innerHTML = solved[i][j];
+    let validInput = isBoardValid(inputs);
+        try {
+            if (validInput) {
+            let solved = solveBoard(inputs);
+            for (let i = 0; i < table.rows.length; i++) {
+                for (let j = 0; j < table.rows[i].cells.length; j++) {
+                    table.rows[i].cells[j].innerHTML = solved[i][j];
+                    }
+                }
+            } else {
+                throw "Please ensure you have enetered a valid board.";
+            }
+        } catch (err) {
+            alert(err);
         }
     }
-}
 
 // Solve board
 function solveBoard(board) {
+    //console.log(board);
     let find = findNextEmpty(board);
     let row = find[0];
     let col = find[1];
@@ -117,7 +126,7 @@ function solveBoard(board) {
         if (findNextEmpty(board)[0] !== -1) {
             board[row][col] = 0;
         }
-    return board;
+        return board;
 };
 
 // Helper functions for solver
@@ -176,3 +185,55 @@ const checkNum = (board, row, col, num) => {
         }
     return false;
 };
+
+// Check board for duplicate input entries for verification
+function isBoardValid(board) {
+    let isInputValid = true;
+    let rows = [];
+    let cols = [];
+    let boxes = [];
+    for (let i = 0; i < 9; i++) {
+        rows.push([]);
+        cols.push([]);
+        boxes.push([]);
+    } //debugger;
+    for (let r = 0; r < 9; r++) {
+        for (let c = 0; c < 9; c++) {
+            let cell = board[r][c];
+            let boxIndex = Math.floor((r / 3)) * 3 + Math.floor(c / 3);
+            rows[r].push(cell);
+            cols[c].push(cell);
+            boxes[boxIndex].push(cell);
+        }
+    }
+    rows.forEach(row => {
+        if (findDuplicate(row) == false ) {
+            isInputValid = false;
+        }
+    });
+    cols.forEach(col => {
+        if (findDuplicate(col) == false) {
+            isInputValid = false;
+        }
+    });
+    boxes.forEach(box => {
+        if (findDuplicate(box) == false) {
+            isInputValid = false
+        }
+    });
+    return isInputValid;
+}
+
+const findDuplicate = arr => {
+    const arrayWithNoEmptySpaces = removeEmptySpaces(arr);
+    const duplicate = new Set(arrayWithNoEmptySpaces);
+    if (arrayWithNoEmptySpaces.length !== duplicate.size) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+const removeEmptySpaces = (inputArray) => {
+    return inputArray.filter(number => number != 0);
+}
